@@ -21,6 +21,13 @@ router.get('/reports/gst-reconciliation', function (req, res) {
   res.json(reports.getGstReconciliation(db));
 });
 
+router.get('/reports/billing-guard/:id', function (req, res) {
+  var db = store.read();
+  var guard = reports.getBillingGuard(db, req.params.id);
+  if (!guard) return res.status(404).json({ error: 'Order not found' });
+  res.json(guard);
+});
+
 // Cart live preview calculation for the POS drawer
 router.post('/pricing/preview', function (req, res) {
   var db = store.read();

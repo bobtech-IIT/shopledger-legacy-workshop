@@ -365,11 +365,28 @@
                 <th class="r">Invoice Total</th>
                 <th class="r">Variance (Δ)</th>
                 <th>Audit Status</th>
+                <th class="r">Proof</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
+      </div>
+
+      <div class="panel billing-guard" style="margin-bottom: 20px;">
+        <div class="panel-header billing-guard-header">
+          <div>
+            <div class="eyebrow">Explainable GST Billing Guard</div>
+            <h2 class="panel-title">Proof, not just a pass/fail check</h2>
+            <p class="panel-desc">Select “Explain” on an order to inspect the exact HSN slab, coupon allocation, taxable value, GST, and corrected invoice preview.</p>
+          </div>
+          <div class="guard-shield" aria-hidden="true">✓</div>
+        </div>
+        <div id="billing-guard-empty" class="guard-empty">
+          <strong>Choose an order to open its audit trail.</strong>
+          <span>The guard never changes order data; it produces a read-only evidence packet.</span>
+        </div>
+        <div id="billing-guard-detail" style="display:none"></div>
       </div>
 
       <div class="panel">

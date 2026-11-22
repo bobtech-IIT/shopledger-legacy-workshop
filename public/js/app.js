@@ -420,11 +420,39 @@ function loadGstReconciliation() {
         '<td class="r"><strong>' + fmtMoney(r.invoiceTotal) + '</strong></td>' +
         '<td class="r" style="' + deltaStyle + '">' + deltaStr + '</td>' +
         '<td>' + badge + '</td>' +
+        '<td class="r"><button class="btn-link" type="button" onclick="openBillingGuard(' + r.orderId + ')">Explain</button></td>' +
         '</tr>';
     }
     document.querySelector('#recon-table tbody').innerHTML = html;
   });
 }
+
+window.openBillingGuard = function (orderId) {
+  get('/api/reports/billing-guard/' + orderId, function (data, status) {
+    if (status !== 200 || !data) return;
+    var empty = document.getElementById('billing-guard-empty');
+    var detail = document.getElementById('billing-guard-detail');
+    empty.style.display = 'none';
+    detail.style.display = '';
+
+    var verdict = data.matchesBilled
+      ? '<span class="guard-verdict pass">✓ Invoice matches what the customer was billed</span>'
+      : '<span class="guard-verdict alert">! Invoice differs from the stored billed record</span>';
+    var proofRows = '';
+    for (var i = 0; i < data.proof.length; i++) {
+      var line = data.proof[i];
+      proofRows += '<tr><td><strong>' + line.name + '</strong></td><td><span class="hsn-badge">' + line.hsn + '</span></td><td>' + line.gstPercent + '%</td><td class="r">' + fmtMoney(line.gross) + '</td><td class="r">-' + fmtMoney(line.discount) + '</td><td class="r">' + fmtMoney(line.taxable) + '</td><td class="r">' + fmtMoney(line.tax) + '</td><td class="r"><strong>' + fmtMoney(line.net) + '</strong></td></tr>';
+    }
+    function totalsCard(label, values, accent) {
+      return '<div class="guard-total-card ' + accent + '"><div class="guard-card-label">' + label + '</div><div class="guard-total">' + fmtMoney(values.total) + '</div><div>Subtotal ' + fmtMoney(values.subtotal) + '</div><div>Discount -' + fmtMoney(values.discount) + '</div><div>GST ' + fmtMoney(values.tax) + '</div></div>';
+    }
+    detail.innerHTML =
+      '<div class="guard-detail-top"><div><div class="guard-order">Order #' + data.order.id + ' · ' + data.order.customer + '</div><div class="guard-meta">' + data.order.date + ' · Coupon: ' + (data.order.coupon || 'None') + '</div></div>' + verdict + '</div>' +
+      '<div class="guard-totals">' + totalsCard('Billed record', data.billed, 'billed') + totalsCard('Verified checkout', data.checkout, 'verified') + totalsCard('Corrected invoice preview', data.invoice, 'invoice-preview') + '</div>' +
+      '<div class="guard-proof-title">Line-by-line calculation proof</div>' +
+      '<div class="table-wrap"><table class="data-table guard-table"><thead><tr><th>Item</th><th>HSN</th><th>GST</th><th class="r">Gross</th><th class="r">Coupon share</th><th class="r">Taxable</th><th class="r">GST amount</th><th class="r">Net</th></tr></thead><tbody>' + proofRows + '</tbody></table></div>';
+  });
+};
 
 function showTab(which) {
   var tabs = ['new', 'orders', 'khata', 'audit'];
